@@ -65,12 +65,16 @@ function Add-GitHubCollaborator{
     $Collaborator
     )
     $headers = Get-AuthHeader -Credential $Credential
-    Write-Host $headers
     $url = "https://api.github.com/repos"
     $repo = $Repository.full_name
     Invoke-RestMethod -Headers $headers -Method PUT -Uri $url/$repo/collaborators/$Collaborator
 }
 
 function Accept-RepositoryInvitations{
+    param (
+    $RepositoryName,
+    $OwnerGroup,
+    $MailDomains
+    )
 
 }
