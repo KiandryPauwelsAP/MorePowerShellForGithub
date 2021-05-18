@@ -72,9 +72,23 @@ function Add-GitHubCollaborator{
 
 function Accept-RepositoryInvitations{
     param (
+    $Credential,
     $RepositoryName,
     $OwnerGroup,
     $MailDomains
     )
-
+    $headers = Get-AuthHeader -Credential $Credential
+    $url = "https://api.github.com"
+    
+    if ($RepositoryName -ne $null)
+    {
+       $invit = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/KiandryPauwelsAP/$RepositoryName/invitations
+       $ids = $invit.id
+       $invit
+       foreach ($id in $ids)
+       {
+        Invoke-RestMethod -Headers $headers -Method Patch -Uri $url/user/repository_invitations/$id
+        $id
+       }
+    }
 }
