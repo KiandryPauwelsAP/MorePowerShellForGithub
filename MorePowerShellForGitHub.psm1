@@ -82,13 +82,12 @@ function Accept-RepositoryInvitations{
     
     if ($RepositoryName -ne $null)
     {
-       $invit = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/KiandryPauwelsAP/$RepositoryName/invitations
-       $ids = $invit.id
-       $invit
-       foreach ($id in $ids)
+       $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/KiandryPauwelsAP/$RepositoryName/invitations
+       $invurls = $inv.url
+       foreach ($invurl in $invurls)
        {
-        Invoke-RestMethod -Headers $headers -Method Patch -Uri $url/user/repository_invitations/$id
-        $id
+        Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurl
+        $invurl
        }
     }
 }
