@@ -73,21 +73,43 @@ function Add-GitHubCollaborator{
 function Accept-RepositoryInvitations{
     param (
     $Credential,
-    $RepositoryName,
+    $RepositoryName = "MorePowerShellForGitHub",
     $OwnerGroup,
-    $MailDomains
+    $MailDomains,
+    $Owner = "KiandryPauwelsAP"
     )
     $headers = Get-AuthHeader -Credential $Credential
     $url = "https://api.github.com"
     
-    if ($RepositoryName -ne $null)
+    <#if ($RepositoryName -ne $null)
     {
-       $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/KiandryPauwelsAP/$RepositoryName/invitations
+       $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
        $invurls = $inv.url
        foreach ($invurl in $invurls)
        {
         Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurl
         $invurl
        }
+    }#>
+
+    if ($MailDomains -ne $null)
+    {
+        $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
+        $invurls = $inv.url   
+        $ownernames = ($inv.inviter).login
+        $counter = 0
+        foreach ($ownername in $ownernames)
+        {
+            $owneremail = (Invoke-RestMethod -Headers $headers -Method GET -uri $url/users/$ownername).email
+            if ($owneremail.Contains($MailDomains))
+            {
+                Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurls[$counter]
+                Write-Host "Accepted"
+            }
+            $counter = $counter + 1
+        }
+        
+ 
     }
+
 }
