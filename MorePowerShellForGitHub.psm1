@@ -74,14 +74,14 @@ function Accept-RepositoryInvitations{
     param (
     $Credential,
     $RepositoryName = "MorePowerShellForGitHub",
-    $OwnerGroup,
-    $MailDomains,
+    $OwnerGroup = ("G_1SNB_D4","G1_SNB_D2"),
+    $MailDomains = "@student.ap.be",
     $Owner = "KiandryPauwelsAP"
     )
     $headers = Get-AuthHeader -Credential $Credential
     $url = "https://api.github.com"
     
-    <#if ($RepositoryName -ne $null)
+<#    if ($RepositoryName -ne $null)
     {
        $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
        $invurls = $inv.url
@@ -90,7 +90,7 @@ function Accept-RepositoryInvitations{
         Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurl
         $invurl
        }
-    }#>
+    }
 
     if ($MailDomains -ne $null)
     {
@@ -107,9 +107,30 @@ function Accept-RepositoryInvitations{
                 Write-Host "Accepted"
             }
             $counter = $counter + 1
-        }
-        
- 
+        }        
     }
 
+    if ($OwnerGroup -ne $null)
+    {
+     $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
+        $invurls = $inv.url   
+        $ownernames = ($inv.inviter).login
+        foreach ($ownername in $ownernames)
+        {
+            $invownergroup = (Invoke-RestMethod -Headers $headers -Method GET -Uri $url/users/$ownername).Bio
+            if ($OwnerGroup -contains $invownergroup)
+            {
+                Write-Host "werkt"
+
+            }
+        }
+    }
 }
+
+#>
+
+<#
+$inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
+$invurls = $inv.url   
+$ownernames = ($inv.inviter).login
+#>
