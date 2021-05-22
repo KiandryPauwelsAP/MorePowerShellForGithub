@@ -71,66 +71,63 @@ function Add-GitHubCollaborator{
 }
 
 function Accept-RepositoryInvitations{
+<#
+    .SYNOPSIS
+    Accepts all repository invitations with the given parameters.
+
+    .DESCRIPTION
+    Accepts all repository invitations with the given parameters.
+    Takes a credential for authentication, a repository name, email domain and ownergroup.
+
+    .PARAMETER Credential
+    Specifies the credentail to be used in the header.
+
+    .PARAMETER RepositoryName
+    Specifies the repository to accept invites from.
+    This must be a String.
+
+    .PARAMETER OwnerGroup
+    Specifies the group found in the repository owner's bio.
+    This must be a String.
+
+    .PARAMETER MailDomains
+    Specifies the maildomain the email of the repository owner must be in.
+    This can be a String or a list of Strings.
+
+    .INPUTS
+    None
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE 
+    Accept-RepositoryInvitations -Credentials $creds -OwnerGroup ("G_2SNB_D2","G_1SNB_D4") -RepositoryName "MorePowerShellForGitHub" -MailDomains "@student.ap.be"
+
+#>
     param (
-    $Credential,
-    $RepositoryName = "MorePowerShellForGitHub",
-    $OwnerGroup = ("G_1SNB_D4","G1_SNB_D2"),
-    $MailDomains = "@student.ap.be",
-    $Owner = "KiandryPauwelsAP"
+        $Credential,
+        $RepositoryName = "MorePowerShellForGitHub",
+        $OwnerGroup = ("G_1SNB_D4","G_1SNB_D2"),
+        $MailDomains = "@student.ap.be",
+        $Owner = "KiandryPauwelsAP"
     )
+
     $headers = Get-AuthHeader -Credential $Credential
-    $url = "https://api.github.com"
-    
-<#    if ($RepositoryName -ne $null)
-    {
-       $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
-       $invurls = $inv.url
-       foreach ($invurl in $invurls)
-       {
-        Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurl
-        $invurl
-       }
-    }
+    $url = "https://api.github.com"    
+    $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
+    $invurls = $inv.url   
+    $ownernames = ($inv.inviter).login
+    $counter = 0
 
-    if ($MailDomains -ne $null)
+    foreach ($invurl in $invurls)
     {
-        $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
-        $invurls = $inv.url   
-        $ownernames = ($inv.inviter).login
-        $counter = 0
-        foreach ($ownername in $ownernames)
+        $ownername = $ownernames[$counter]
+        $invownergroup = (Invoke-RestMethod -Headers $headers -Method Get -Uri $url/users/$ownername).Bio
+        $owneremail = (Invoke-RestMethod -Headers $headers -Method Get -Uri $url/users/$ownername).email
+        if ($owneremail.Contains($MailDomains) -and $OwnerGroup -contains $invownergroup)
         {
-            $owneremail = (Invoke-RestMethod -Headers $headers -Method GET -uri $url/users/$ownername).email
-            if ($owneremail.Contains($MailDomains))
-            {
-                Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurls[$counter]
-                Write-Host "Accepted"
-            }
-            $counter = $counter + 1
-        }        
-    }
-
-    if ($OwnerGroup -ne $null)
-    {
-     $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
-        $invurls = $inv.url   
-        $ownernames = ($inv.inviter).login
-        foreach ($ownername in $ownernames)
-        {
-            $invownergroup = (Invoke-RestMethod -Headers $headers -Method GET -Uri $url/users/$ownername).Bio
-            if ($OwnerGroup -contains $invownergroup)
-            {
-                Write-Host "werkt"
-
-            }
+            Invoke-RestMethod -Headers $headers -Method PATCH -Uri $invurl
         }
+        $counter = $counter + 1
     }
 }
-
-#>
-
-<#
-$inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
-$invurls = $inv.url   
-$ownernames = ($inv.inviter).login
-#>
