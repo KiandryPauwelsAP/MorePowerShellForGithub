@@ -5,10 +5,10 @@ function Get-AuthHeader{
 
     .DESCRIPTION
     Gets the GitHub header to be used for authentication in other GitHub functions or custom functions.
-    Takes a existing credential previously made by the user
+    Takes a existing credential previously made by the user and used in the authentication step.
 
     .PARAMETER Credential
-    Specifies the credentail to be used in the header
+    Specifies the credential to be used in the header
 
     .INPUTS
     None
@@ -17,12 +17,9 @@ function Get-AuthHeader{
     A header object to be used for authentication
 
     .EXAMPLE 
-    $header = Get-AuthHeader -Credential $creds
+    $header = Get-AuthHeader 
 #>   
-    param (
-     $Credential  
-    )
-    $auth = [System.Convert]::ToBase64String([char[]]$Credential.GetNetworkCredential().Password)
+    $auth = [System.Convert]::ToBase64String([char[]]$global:creds.GetNetworkCredential().Password)
     $headers = @{Authorization="Basic $auth"}
     return $headers
 }
@@ -35,9 +32,6 @@ function Add-GitHubCollaborator{
     .DESCRIPTION
     Sends a collaboration invite to a github user for a repository.
     Takes a credential for authentication, a repository object and a collaborator username.
-
-    .PARAMETER Credential
-    Specifies the credentail to be used in the header.
 
     .PARAMETER Repository
     Specifies the repository to send an invite for.
@@ -53,18 +47,21 @@ function Add-GitHubCollaborator{
     A collaboration invite to the specified user.
 
     .EXAMPLE 
-    Add-GitHubCollaborator -Credential $creds -Repository $repo -Collaborator "Kiandry-Pauwels"
+    Add-GitHubCollaborator -Repository $repo -Collaborator "Kiandry-Pauwels"
 
     .EXAMPLE
-    Add-GitHubCollaborator -Credential $creds -Repository $repo -Collaborator $username
+    Add-GitHubCollaborator -Repository $repo -Collaborator $username
+
+    .EXAMPLE
+    New-GitHubRepository -RepositoryName MoreCode4Testing | Add-GitHubCollaborator -Collaborator "dieter-ap"
 #>
     param (
-    $Credential,
+
     [Parameter(ValueFromPipeline=$true)]
     $Repository,
     $Collaborator
     )
-    $headers = Get-AuthHeader -Credential $Credential
+    $headers = Get-AuthHeader
     $url = "https://api.github.com/repos"
     $repo = $Repository.full_name
     Invoke-RestMethod -Headers $headers -Method PUT -Uri $url/$repo/collaborators/$Collaborator
@@ -78,9 +75,6 @@ function Accept-RepositoryInvitations{
     .DESCRIPTION
     Accepts all repository invitations with the given parameters.
     Takes a credential for authentication, a repository name, email domain and ownergroup.
-
-    .PARAMETER Credential
-    Specifies the credentail to be used in the header.
 
     .PARAMETER RepositoryName
     Specifies the repository to accept invites from.
@@ -101,18 +95,18 @@ function Accept-RepositoryInvitations{
     None
 
     .EXAMPLE 
-    Accept-RepositoryInvitations -Credentials $creds -OwnerGroup ("G_2SNB_D2","G_1SNB_D4") -RepositoryName "MorePowerShellForGitHub" -MailDomains "@student.ap.be"
+    Accept-RepositoryInvitations -OwnerGroup ("G_2SNB_D2","G_1SNB_D4") -RepositoryName "MorePowerShellForGitHub" -MailDomains "@student.ap.be"
 
 #>
     param (
-        $Credential,
+
         $RepositoryName = "MorePowerShellForGitHub",
         $OwnerGroup = ("G_1SNB_D4","G_1SNB_D2"),
         $MailDomains = "@student.ap.be",
         $Owner = "KiandryPauwelsAP"
     )
 
-    $headers = Get-AuthHeader -Credential $Credential
+    $headers = Get-AuthHeader
     $url = "https://api.github.com"    
     $inv = Invoke-RestMethod -Headers $headers -Method GET -Uri $url/repos/$Owner/$RepositoryName/invitations
     $invurls = $inv.url   
@@ -133,10 +127,30 @@ function Accept-RepositoryInvitations{
 }
 
 function Set-MoreGitHubAuthentication {
+<#
+    .SYNOPSIS
+    Sets the GitHub authentication for the current Powershell session.
 
+    .DESCRIPTION
+    Sets the GitHub authentication for the current Powershell session.
+    The given credentials get put into a global variable that is used for authentication to get headers in other functions.
+    The authentication makes executing GitHubForPowerShell commands possible.
+
+    .PARAMETER Credential
+    Specifies the credential to be used for authentication. This must be a pscredential object.
+
+    .INPUTS
+    None
+
+    .OUTPUTS
+    A global credential variable and authentication for github commands.
+
+    .EXAMPLE 
+    Set-MoreGitHubAuthentication -Credential $creds 
+#>
     param (
         $Credential
     )
+    $global:creds = $Credential
     Set-GitHubAuthentication -SessionOnly ` -Credential $Credential
-    return $Credential
 }

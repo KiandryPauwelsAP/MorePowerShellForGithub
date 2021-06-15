@@ -3,7 +3,7 @@ Install-Module -Name PowerShellForGithub
 Install-Module -Name PowerShellForGithub
 Install-Module -Name PowerShellForGithub
 cls
-Read-Host -AsSecureString -Prompt 'token' | ConvertFrom-SecureString | Tee-Object .\secret.txt | ConvertTo-SecureString | Set-Variable ss_token
+Read-Host -AsSecureString -Prompt 'token' | ConvertFrom-SecureString | Tee-Object ".\secret.txt" | ConvertTo-SecureString | Set-Variable ss_token
 $creds = New-Object pscredential 'user', $ss_token
 $creds
 Set-GitHubAuthentication -SessionOnly ` -Credential $creds
