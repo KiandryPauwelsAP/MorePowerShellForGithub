@@ -20,8 +20,7 @@ function Get-AuthHeader{
     $header = Get-AuthHeader -Credential $creds
 #>   
     param (
-        [Parameter(Mandatory=$true)]
-        $Credential
+     $Credential  
     )
     $auth = [System.Convert]::ToBase64String([char[]]$Credential.GetNetworkCredential().Password)
     $headers = @{Authorization="Basic $auth"}
@@ -61,6 +60,7 @@ function Add-GitHubCollaborator{
 #>
     param (
     $Credential,
+    [Parameter(ValueFromPipeline=$true)]
     $Repository,
     $Collaborator
     )
@@ -130,4 +130,13 @@ function Accept-RepositoryInvitations{
         }
         $counter = $counter + 1
     }
+}
+
+function Set-MoreGitHubAuthentication {
+
+    param (
+        $Credential
+    )
+    Set-GitHubAuthentication -SessionOnly ` -Credential $Credential
+    return $Credential
 }
