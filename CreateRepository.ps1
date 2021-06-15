@@ -19,5 +19,5 @@ if(!(Test-Path $directory))
 git init $directory
 git add --all
 git commit -m "Initial commit"
-git remote add origin $repo.ssh_url
+git remote add origin $repo.clone_url
 git push -u origin main
