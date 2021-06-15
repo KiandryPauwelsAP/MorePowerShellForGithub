@@ -1,12 +1,12 @@
 ﻿param($credential,$directory,$repository,$username)
 
 <#Authenticate to user#>
-<#Set-GitHubAuthentication -SessionOnly ` -Credential $credential
+Set-GitHubAuthentication -SessionOnly ` -Credential $credential
 $auth = [System.Convert]::ToBase64String([char[]]$credential.GetNetworkCredential().Password)
 $headers = @{Authorization="Basic $auth"}
 
 <#Create github repo#>
-<#$repo = New-GitHubRepository -RepositoryName $repository -Private
+$repo = New-GitHubRepository -RepositoryName $repository -Private
 $reponame = $repo.full_name
 Invoke-RestMethod -Headers $headers -Method PUT -Uri https://api.github.com/repos/$reponame/collaborators/dieter-ap 
 
@@ -20,4 +20,4 @@ git init $directory
 git add --all
 git commit -m "Initial commit"
 git remote add origin $repo.ssh_url
-git push -u origin master
+git push -u origin main
