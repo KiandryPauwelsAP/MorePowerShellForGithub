@@ -17,5 +17,7 @@ if(!(Test-Path $directory))
 }
 
 git init $directory
-git add *
+git add --all
 git commit -m "Initial commit"
+git remote add origin $repo.ssh_url
+git push -u origin master
