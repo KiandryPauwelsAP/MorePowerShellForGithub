@@ -14,10 +14,13 @@ Invoke-RestMethod -Headers $headers -Method PUT -Uri https://api.github.com/repo
 if(!(Test-Path $directory))
 {
     New-Item -ItemType Directory -Force -Path $directory
+    New-Item -ItemType File -Name README -Path $directory
 }
 
+<#Initialise local git repo and push to remote repo#>
+cd $directory
 git init $directory
-git add --all
+git add .
 git commit -m "Initial commit"
 git remote add origin $repo.clone_url
 git push -u origin main
